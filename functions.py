@@ -5,6 +5,7 @@
 @Email : yongbowin@outlook.com
 @File  : functions.py
 @Desc  : reference from https://github.com/zergtant/pytorch-handbook/blob/master/chapter1/1_tensor_tutorial.ipynb
+        for more details https://pytorch.org/docs/stable/torch.html
 """
 
 import torch
@@ -346,6 +347,123 @@ def cuda_tensor():
     """
 
 
+def _norm():
+    """
+    torch.norm(input, p, dim, out=None) → Tensor
+        input (Tensor) – 输入张量
+        p (float) – 范数计算中的幂指数值, default=2
+        dim (int) – 缩减的维度
+        out (Tensor, optional) – 结果张量
+    :return:
+    """
+    a = torch.tensor([[1, 2, 3, 4], [1, 2, 3, 4]]).float()
+    """
+    >>> print(a, type(a))
+    tensor([[1., 2., 3., 4.],
+        [1., 2., 3., 4.]]) <class 'torch.Tensor'>
+    >>> print(a.shape)
+    torch.Size([2, 4])
+    """
+    a0 = torch.norm(a, p=2, dim=0)  # 按0维度求2范数
+    a1 = torch.norm(a, p=2, dim=1)  # 按1维度求2范数
+    """
+    >>> print(a0)
+    tensor([1.4142, 2.8284, 4.2426, 5.6569])
+    >>> print(a1)
+    tensor([5.4772, 5.4772])
+    """
+
+    # xx
+    a = torch.rand((2, 3, 4))
+    """
+    >>> print(a, a.shape)
+    tensor([[[0.9407, 0.4680, 0.9844, 0.5807],
+         [0.1841, 0.5339, 0.5920, 0.9322],
+         [0.1724, 0.2696, 0.3965, 0.8955]],
+
+        [[0.8910, 0.5273, 0.8243, 0.7536],
+         [0.6296, 0.7634, 0.2678, 0.3650],
+         [0.8184, 0.1992, 0.5086, 0.3332]]]) torch.Size([2, 3, 4])
+    """
+    at = torch.norm(a, p=2, dim=1, keepdim=True)  # 保持维度
+    af = torch.norm(a, p=2, dim=1, keepdim=False)  # 不保持维度
+    """
+    >>> print(at, at.shape)
+    tensor([[[1.4586, 1.0426, 1.1850, 1.1981]],
+            [[0.5215, 1.2621, 1.3342, 1.0673]]]) torch.Size([2, 1, 4]) 保持维度
+    >>> print(af, af.shape)
+    tensor([[1.4586, 1.0426, 1.1850, 1.1981],
+        [0.5215, 1.2621, 1.3342, 1.0673]]) torch.Size([2, 4]) 不保持维度
+    
+    可以发现，当keepdim=False时，输出比输入少一个维度（就是指定的dim求范数的维度）。
+    而keepdim=True时，输出与输入维度相同，仅仅是输出在求范数的维度上元素个数变为1。
+    这也是为什么有时我们把参数中的dim称为缩减的维度，因为norm运算之后，此维度或者消失或者元素个数变为1.
+    """
+
+
+def squeeze_unsqueeze():
+    """
+    变换tensor的维度
+
+    squeeze(): 挤压维度, 只有维度为1时才会去掉
+    unsqueeze(): 扩展维度
+
+    维度从0开始计数，超出维度范围会报错 IndexError: Dimension out of range
+    不返回新对象，所以变换后需要重新赋值
+    """
+    x = torch.arange(0, 6)
+    x = x.view(2, 3)
+    """ 扩展维度
+    >>> print(x, x.shape)
+    tensor([[0, 1, 2],
+        [3, 4, 5]]) torch.Size([2, 3])
+    >>> print(x.unsqueeze(0), x.unsqueeze(0).shape)  # 0
+    tensor([[[0, 1, 2],
+         [3, 4, 5]]]) torch.Size([1, 2, 3])
+    >>> print(x.unsqueeze(1), x.unsqueeze(1).shape)  # 1
+    tensor([[[0, 1, 2]],
+        [[3, 4, 5]]]) torch.Size([2, 1, 3])
+    >>> print(x.unsqueeze(2), x.unsqueeze(2).shape)
+    tensor([[[0],
+         [1],
+         [2]],
+
+        [[3],
+         [4],
+         [5]]]) torch.Size([2, 3, 1])
+    >>> print(x.unsqueeze(-1), x.unsqueeze(-1).shape)  # -1
+    tensor([[[0],
+         [1],
+         [2]],
+
+        [[3],
+         [4],
+         [5]]]) torch.Size([2, 3, 1])
+    >>> print(x.unsqueeze(-2), x.unsqueeze(-2).shape)  # -2
+    tensor([[[0, 1, 2]],
+        [[3, 4, 5]]]) torch.Size([2, 1, 3])
+    >>> print(x.unsqueeze(-3), x.unsqueeze(-3).shape)
+    tensor([[[0, 1, 2],
+         [3, 4, 5]]]) torch.Size([1, 2, 3])
+    """
+
+    y = x.unsqueeze(0)
+    print(y, y.shape)
+    print(y.squeeze(0), y.squeeze(0).shape)
+    print(y.squeeze(1), y.squeeze(1).shape)
+    """ 挤压维度， 只有维度为1时才会去掉
+    >>> print(y, y.shape)
+    tensor([[[0, 1, 2],
+         [3, 4, 5]]]) torch.Size([1, 2, 3])
+    >>> print(y.squeeze(0), y.squeeze(0).shape)
+    tensor([[0, 1, 2],
+        [3, 4, 5]]) torch.Size([2, 3])
+    >>> print(y.squeeze(1), y.squeeze(1).shape)
+    tensor([[[0, 1, 2],
+         [3, 4, 5]]]) torch.Size([1, 2, 3])
+    """
+
+
 if __name__ == '__main__':
     # randn_rand_normal_linspace()
     # arange_range()
@@ -356,4 +474,6 @@ if __name__ == '__main__':
     # change_dim()
     # get_val()
     # trans_numpy()
-    cuda_tensor()
+    # cuda_tensor()
+    # _norm()
+    squeeze_unsqueeze()
