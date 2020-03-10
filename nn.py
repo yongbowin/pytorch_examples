@@ -10,6 +10,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torch.optim as optim
 
 
 class Net(nn.Module):
@@ -210,3 +211,43 @@ if __name__ == '__main__':
     conv1.bias.grad after backward
     tensor([-0.0062, -0.0113,  0.0097,  0.0062,  0.0071, -0.0101])
     """
+
+    # ------------------------- 更新权重（自定义方法） -------------------------
+    """ 自定义优化方法
+    在实践中最简单的权重更新规则是随机梯度下降（SGD）： ``weight = weight - learning_rate * gradient``
+    
+    我们可以使用简单的Python代码实现这个规则：
+    learning_rate = 0.01
+    for f in net.parameters():
+        f.data.sub_(f.grad.data * learning_rate)
+    
+    The .sub_() method indicates with the “_” suffix that it is done in-place.
+        1.Actual symbols +,-,x,/ e.g. a = a + b
+        2.Not in-place operators add(),sub() e.g. a = a.add(b)
+        3.In-place operators add_(),sub_() e.g. a.add_(b)
+        
+    f.data.sub_(f.grad.data * learning_rate) 等价于 f.data = f.data -(f.grad.data * learning_rate)
+    """
+    learning_rate = 0.01
+    for f in net.parameters():
+        # print(f)  # 获取 W 或者 b 的数据, 带requires_grad=True参数
+        # print(f.data)  # 获取 W 或者 b 的数据， 不带requires_grad=True参数
+        # print(f.grad)  # 获取 W 或者 b 的数据， 不带requires_grad=True参数
+        # print(f.grad.data)  # 获取对应 W 或者 b 的梯度数据， 不带requires_grad=True参数
+        f.data.sub_(f.grad.data * learning_rate)
+
+    # -------------------------- 更新权重（使用optim包） -------------------------
+    """
+    注意:
+        观察如何使用``optimizer.zero_grad()``手动将梯度缓冲区设置为零。
+        这是因为梯度是按Backprop部分中的说明累积的。
+    """
+    # 创建优化器
+    optimizer = optim.SGD(net.parameters(), lr=0.01)
+    # 在训练循环中
+    optimizer.zero_grad()  # 清空梯度缓存
+    output = net(input)  # 前向传播后，得到输出
+    loss = criterion(output, target)  # 计算前向传播后得到的输出与目标之间的差异（使用均方根误差计算该损失）
+    loss.backward()  # 将该loss进行方向传播，来更新权重
+    optimizer.step()  # 使用优化器来更新权重
+
