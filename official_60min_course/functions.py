@@ -464,6 +464,176 @@ def squeeze_unsqueeze():
     """
 
 
+def max_min():
+    """
+    Functions:
+        torch.max() :
+            torch.max(input) : 返回输入张量所有元素的最大值。 input (Tensor) – 输入张量
+            torch.max(input, dim, max=None, max_indices=None) -> (Tensor, LongTensor) :
+                返回输入张量给定维度上每行的最大值，并同时返回每个最大值的位置索引。
+                参数：
+                    input (Tensor) – 输入张量
+                    dim (int) – 指定的维度
+                    max (Tensor, optional) – 结果张量，包含给定维度上的最大值
+                    max_indices (LongTensor, optional) – 结果张量，包含给定维度上每个最大值的位置索引
+                输出形状中，将dim维设定为1，其它与输入形状保持一致。
+
+                使用 .values 和 .indices 来分别获取值和索引 or values, indices = torch.max()
+            torch.max(input, other, out=None) → Tensor :  输入两个tensor，返回每个tensor对应位置上的最大值（两者比较之后的）
+                                                          ([有待商榷] 两张量形状不需匹配，但元素数须相同。当形状不匹配时，input的形状作为
+                                                          返回张量的形状。)
+        torch.min() : 同上
+    """
+    a = torch.randn(2, 3)
+    """
+    >>> print(a, torch.max(a))  # 全局最大值
+    tensor([[-0.6256, -1.2318, -1.0844],
+        [ 0.9015,  1.1492,  0.4514]]) tensor(1.1492)
+    """
+
+    b = torch.randn(4, 4)
+    """
+    >>> print(b)
+    tensor([[ 0.1056,  1.4088,  0.9080, -0.4049],
+            [-1.8441,  0.2476, -0.4088, -0.8478],
+            [-0.0244, -0.7826, -0.1187,  2.5471],
+            [ 0.3594,  1.2069, -1.2887,  1.1275]])
+    
+    >>> print(torch.max(b, 1))  # 按行求最大值
+    torch.return_types.max(
+    values=tensor([1.4088, 0.2476, 2.5471, 1.2069]),  # 每行的最大值
+    indices=tensor([1, 1, 3, 1]))  # 每行最大值的索引
+    
+    >>> print(torch.max(b, 0))  # 按列求最大值
+    torch.return_types.max(
+    values=tensor([0.3594, 1.4088, 0.9080, 2.5471]),  # 每列的最大值
+    indices=tensor([3, 0, 0, 2]))  # 每列最大值的索引
+    
+    >>> print(torch.max(b, -1))  # 按行求最大值
+    torch.return_types.max(
+    values=tensor([1.4088, 0.2476, 2.5471, 1.2069]),
+    indices=tensor([1, 1, 3, 1]))
+    
+    >>> print(torch.max(b, -2))  # 按列求最大值
+    torch.return_types.max(
+    values=tensor([0.3594, 1.4088, 0.9080, 2.5471]),
+    indices=tensor([3, 0, 0, 2]))
+    """
+
+    a1 = torch.randn(3, 4)
+    a2 = torch.randn(3, 4)
+    """
+    >>> print(a1)
+    tensor([[-0.8511, -0.2535, -0.8078,  0.1293],
+            [-0.9875,  1.4637,  0.7036, -0.6904],
+            [ 3.0555, -0.1482,  2.1257, -0.2217]])
+    
+    >>> print(a2)
+    tensor([[ 0.4756, -1.4993,  1.4186,  2.3283],
+            [-2.6781, -1.7613, -0.0263, -1.7332],
+            [-1.3052, -0.6186,  0.0758, -0.6756]])
+    
+    >>> print(torch.max(a1, a2))
+    tensor([[ 0.4756, -0.2535,  1.4186,  2.3283],
+            [-0.9875,  1.4637,  0.7036, -0.6904],
+            [ 3.0555, -0.1482,  2.1257, -0.2217]])
+    """
+
+
+def _size():
+    """
+    torch.size()用法
+    :return:
+    """
+    """
+    >>> import torch
+    >>> a=torch.randn(2,3)
+    >>> a
+    tensor([[-0.0570,  0.5708,  0.3895],
+            [ 0.9151,  1.0545, -0.6688]])
+    >>> a.size()
+    torch.Size([2, 3])
+    >>> a.size(0)
+    2
+    >>> a.size(1)
+    3
+    >>> a.size(-1)
+    3
+    >>> a.size(-2)
+    2
+    >>> a.size()[0]
+    2
+    >>> a.size()[1]
+    3
+    >>> a.size()[-1]
+    3
+    >>> a.size()[-2]
+    2
+    """
+    pass
+
+
+def compare_tensor():
+    """
+    比较tensor中元素
+    """
+    """
+    >>> a=torch.randn(3)
+    >>> a
+    tensor([-1.2667,  0.1627,  0.2077])
+    >>> b=a
+    >>> a
+    tensor([-1.2667,  0.1627,  0.2077])
+    >>> b
+    tensor([-1.2667,  0.1627,  0.2077])
+    >>> (a==b)
+    tensor([True, True, True])  # 每个元素都会比较
+    >>> (a==b).sum()  # 和为3
+    tensor(3)
+    >>> (a==b).sum().item()
+    3
+    >>> c=torch.tensor([-1.2667,  0.1627,  1.2077])  # 改变最后一个元素值
+    >>> (a==c)
+    tensor([False, False, False])  # 全部为false
+    >>> (a==c).sum()  # 和为0
+    tensor(0)
+    >>> (a==c).sum().item()
+    0
+    """
+    pass
+
+
+def save_model():
+    """
+    Pytorch中保存模型的方法，有两种 :
+        1.保存模型状态字典 (推荐)
+        2.保存整个模型
+
+    reference from https://pytorch.org/docs/stable/notes/serialization.html
+    """
+    # 方法一
+    """
+    保存模型 : 
+    net = Net()  # model object
+    PATH = "./xxx_model.bin"
+    torch.save(net.state_dict(), PATH)
+    
+    加载模型 : 
+    the_model = TheModelClass(*args, **kwargs)
+    the_model.load_state_dict(torch.load(PATH))
+    """
+
+    # 方法二
+    """
+    保存模型 :
+    torch.save(net, PATH)
+    
+    加载模型 : 
+    the_model = torch.load(PATH)
+    """
+    pass
+
+
 if __name__ == '__main__':
     # randn_rand_normal_linspace()
     # arange_range()
@@ -476,4 +646,5 @@ if __name__ == '__main__':
     # trans_numpy()
     # cuda_tensor()
     # _norm()
-    squeeze_unsqueeze()
+    # squeeze_unsqueeze()
+    max_min()

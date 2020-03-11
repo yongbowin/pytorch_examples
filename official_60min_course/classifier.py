@@ -5,6 +5,7 @@
 @Email : yongbowin@outlook.com
 @File  : classifier.py
 @Desc  : reference from https://github.com/zergtant/pytorch-handbook/blob/master/chapter1/4_cifar10_tutorial.ipynb
+        raw from https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html#sphx-glr-beginner-blitz-cifar10-tutorial-py
 """
 
 import torch
@@ -16,6 +17,11 @@ import torch.optim as optim
 
 import matplotlib.pyplot as plt
 import numpy as np
+from tqdm import tqdm
+import time
+import datetime
+
+import utils
 
 """
 关于数据？
@@ -79,6 +85,7 @@ def imshow(img):
     img = img / 2 + 0.5  # unnormalize
     npimg = img.numpy()
     plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.show()
 
 
 def load_data():
@@ -220,17 +227,24 @@ if __name__ == '__main__':
     
     print('Finished Training')
     """
+    start_time, _ = utils.get_time()
     for epoch in range(2):  # 运行两个epoch
         running_loss = 0.0  # 每个epoch都需要重新初始化loss为 0.0
-        for i, data in enumerate(trainloader, 0):  # 从0开始迭代
+        for i, data in tqdm(enumerate(trainloader, 0)):  # 从0开始迭代
             # 获取输入
             inputs, labels = data
-            if i < 1:
-                print("*"*50)
-                print(inputs)
-                print("-"*50)
-                print(labels)
-
+            """
+            inputs : torch.Size([4, 3, 32, 32])
+            tensor([[[[-0.9843, -0.9843, -0.9922,  ..., -1.0000, -0.9922, -0.9765],
+                      ...,
+                      [-0.9922, -0.9922, -0.9922,  ..., -0.9137, -0.9216, -0.8902]]],
+                      ...,
+                    [[[ 0.4196,  0.3882,  0.4039,  ...,  0.6314,  0.6392,  0.6314],
+                      ...,
+                      [ 0.5765,  0.5686,  0.5765,  ..., -0.0039,  0.0980,  0.0902]]]])
+            
+            labels : tensor([1, 4, 5, 0])  torch.Size([4])
+            """
             # 梯度置0
             optimizer.zero_grad()
 
@@ -249,3 +263,120 @@ if __name__ == '__main__':
                 print('[%d, %5d] loss: %.3f' % (epoch + 1, i + 1, running_loss / 2000))
                 running_loss = 0.0
     print('Finished Training')
+    end_time, _ = utils.get_time()
+
+    # 保存训练好的模型
+    """
+    Example:
+        >>> # Save to file
+        >>> x = torch.tensor([0, 1, 2, 3, 4])
+        >>> torch.save(x, 'tensor.pt')
+        >>> # Save to io.BytesIO buffer
+        >>> buffer = io.BytesIO()
+        >>> torch.save(x, buffer)
+
+    ----------
+    PATH = './cifar_net.pth'
+    torch.save(net.state_dict(), PATH)
+    """
+    PATH = "./_net.pth"
+    torch.save(net.state_dict(), PATH)
+
+    # ----------------- 5.在测试集上测试网络 ------------
+    """
+    # 第一步，显示测试集中的图片并熟悉图片内容。
+    dataiter = iter(testloader)
+    images, labels = dataiter.next()
+    # 10个类别
+    classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+    # 显示图片
+    imshow(torchvision.utils.make_grid(images))
+    print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(4)))
+    """
+
+    """
+    correct = 0
+    total = 0
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+    
+    print('Accuracy of the network on the 10000 test images: %d %%' % (
+        100 * correct / total))
+    """
+    start_time_pred, _ = utils.get_time()
+    correct = 0
+    total = 0
+    correct_num = 0
+    nums = 0
+    with torch.no_grad():  # 测试时不需要梯度的更新
+        for data in tqdm(testloader):
+            nums += 1
+            images, labels = data
+            outputs = net(images)
+            # 预测时没有loss
+            _, predicted = torch.max(outputs.data, 1)
+            """
+            images.shape: torch.Size([4, 3, 32, 32])
+            labels shape: torch.Size([4])
+            predicted shape: torch.Size([4])
+            """
+            total += labels.size(0)  # 求测试集的样本个数
+            correct += (predicted == labels).sum().item()  # 求出的值为相等个数的 len(predicted) 倍, 10标签就是10倍
+
+            if (predicted == labels).sum().item() > 0:  # 预测正确
+                correct_num += 1
+    print('Accuracy of the network on the 10000 test images: %d %%' % (100 * correct / total))
+    print("self computing accuracy: " + str(correct_num / nums) + " correct nums: " + str(correct_num) + " nums: " + str(nums))
+
+    end_time_pred, _ = utils.get_time()
+
+    print("Model training, start at: " + str(start_time) + ", end at: " + str(end_time))
+    print("Model predicting, start at: " + str(start_time_pred) + ", end at: " + str(end_time_pred))
+    """
+    Accuracy of the network on the 10000 test images: 56 %
+    self computing accuracy: 0.9636 correct nums: 2409 nums: 2500
+    Model training, start at: 2020-03-11 15:44:34, end at: 2020-03-11 15:48:34
+    Model predicting, start at: 2020-03-11 15:48:34, end at: 2020-03-11 15:48:37
+    """
+
+    # ------ 6.在测试集上检查哪些类预测的好，哪些不好 -------
+    """
+    class_correct = list(0. for i in range(10))
+    class_total = list(0. for i in range(10))
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            outputs = net(images)
+            _, predicted = torch.max(outputs, 1)
+            c = (predicted == labels).squeeze()
+            for i in range(4):
+                label = labels[i]
+                class_correct[label] += c[i].item()
+                class_total[label] += 1
+    
+    
+    for i in range(10):
+        print('Accuracy of %5s : %2d %%' % (
+            classes[i], 100 * class_correct[i] / class_total[i]))
+    """
+    # class_correct = list(0. for i in range(10))  # [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    # class_total = list(0. for i in range(10))
+
+    # ----------------- 7.在GPU上训练网络 --------------
+    """
+    把一个神经网络移动到GPU上训练就像把一个Tensor转换GPU上一样简单。并且这个操作会递归遍历有所模块，并将其参数和缓冲区转换为CUDA张量。
+    """
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # print(device)  # cpu
+
+    """
+    然后这些方法将递归遍历所有模块并将模块的参数和缓冲区 转换成CUDA张量 ： net.to(device)
+    记住：inputs, labels 和 images 也要转换 : inputs, labels = inputs.to(device), labels.to(device)
+    
+    为什么我们没注意到GPU的速度提升很多？那是因为网络非常的小。
+    """
