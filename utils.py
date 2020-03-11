@@ -84,3 +84,15 @@ def get_time():
     logger = __logger()
     logger.info("Get format_time and now_time.")
     return format_time, now_time
+
+
+def cost_time(start_time, end_time):
+    """
+    获取时间差 (格式化)
+    :param start_time: format_time
+    :param end_time: format_time
+    :return: format_time
+    """
+    _cost = end_time - start_time
+    return _cost
+

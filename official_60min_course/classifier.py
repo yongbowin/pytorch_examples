@@ -379,4 +379,13 @@ if __name__ == '__main__':
     记住：inputs, labels 和 images 也要转换 : inputs, labels = inputs.to(device), labels.to(device)
     
     为什么我们没注意到GPU的速度提升很多？那是因为网络非常的小。
+    
+    用如下方式把一个模型放到GPU上 : 
+    device = torch.device("cuda:0")
+    model.to(device)
+    
+    然后复制所有的张量到GPU上：
+    mytensor = my_tensor.to(device)
+    
+    请注意，只调用my_tensor.to(device)并没有复制张量到GPU上，而是返回了一个copy。所以你需要把它赋值给一个新的张量并在GPU上使用这个张量。
     """
