@@ -92,5 +92,6 @@ Adam 优化算法的基本思想就是将 Momentum 和 RMSprop 结合起来形�
             algorithm from the paper `On the Convergence of Adam and Beyond`_
             (default: False)
 """
-optimizer_adam = optim.Adam(model.parameters(), lr=0.01)
+# 这里的lr，betas，还有eps都是用默认值即可，所以Adam是一个使用起来最简单的优化方法
+optimizer_adam = optim.Adam(model.parameters(), lr=0.001, betas=(0.9, 0.999), eps=1e-08)
 
